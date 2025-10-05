@@ -1,0 +1,6 @@
+timestamp,source_ip,dest_ip,protocol,action,threat_label,log_type,bytes_transferred,user_agent,request_path
+2024-07-31T00:00:00,177.52.183.80,192.168.1.50,HTTPS,blocked,suspicious,ids,45164,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",/login?backup.sql
+2024-04-07T00:00:00,192.168.1.248,192.168.1.15,HTTP,allowed,benign,application,20652,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",/login
+2024-05-15T10:30:00,10.0.0.100,8.8.8.8,DNS,allowed,benign,network,512,"curl/7.68.0",/
+2024-06-01T14:22:33,203.0.113.45,192.168.1.100,TCP,blocked,malicious,firewall,1024,"python-requests/2.25.1",/admin/config.php
+2024-06-02T09:15:22,192.168.1.200,172.16.0.1,HTTPS,allowed,benign,proxy,2048,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",/api/data

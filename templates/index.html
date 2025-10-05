@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ CyberGuard - Data Breach Activity Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>CyberGuard</h1>
+                </div>
+                <p class="subtitle">✨ Data Breach Activity Classifier ✨</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Single Activity Classification -->
+            <section class="card single-classification">
+                <div class="card-header">
+                    <h2><i class="fas fa-search"></i> Single Activity Analysis</h2>
+                    <p>Analyze a single activity record for potential threats</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="activity-input">Activity Data (CSV or JSON):</label>
+                    <textarea id="activity-input" placeholder="Enter your activity data here... (CSV row or JSON object)"></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button id="classify-btn" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> Classify Activity
+                    </button>
+                    <button id="load-sample-btn" class="btn btn-secondary">
+                        <i class="fas fa-star"></i> Load Sample
+                    </button>
+                    <button id="clear-btn" class="btn btn-outline">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                
+                <div id="single-result" class="result-container" style="display: none;">
+                    <div class="result-header">
+                        <h3><i class="fas fa-clipboard-check"></i> Classification Result</h3>
+                    </div>
+                    <div id="single-result-content" class="result-content"></div>
+                </div>
+            </section>
+
+            <!-- Batch Processing -->
+            <section class="card batch-processing">
+                <div class="card-header">
+                    <h2><i class="fas fa-upload"></i> Batch Processing</h2>
+                    <p>Upload a CSV or JSON file to analyze multiple activities</p>
+                </div>
+                
+                <div class="file-upload-area" id="file-upload-area">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Drop your files here or click to browse</h3>
+                        <p>Supports CSV and JSON files (multiple files allowed)</p>
+                        <input type="file" id="file-input" accept=".csv,.json,.jsonl" multiple style="display: none;">
+                    </div>
+                </div>
+                
+                <div id="file-list" class="file-list" style="display: none;">
+                    <h4><i class="fas fa-files"></i> Selected Files:</h4>
+                    <ul id="file-list-items"></ul>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="has-header" checked>
+                        <span class="checkmark"></span>
+                        First row is header (CSV files)
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button id="process-batch-btn" class="btn btn-primary" disabled>
+                        <i class="fas fa-cogs"></i> Process Batch
+                    </button>
+                    <button id="clear-batch-btn" class="btn btn-outline">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                
+                <div id="batch-progress" class="progress-container" style="display: none;">
+                    <div class="progress-header">
+                        <h3><i class="fas fa-cogs"></i> Processing Progress</h3>
+                    </div>
+                    <div class="progress-content">
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <div id="progress-text" class="progress-text">Starting...</div>
+                        <div id="current-file" class="current-file"></div>
+                    </div>
+                </div>
+                
+                <div id="batch-result" class="result-container" style="display: none;">
+                    <div class="result-header">
+                        <h3><i class="fas fa-chart-bar"></i> Batch Results</h3>
+                        <div id="batch-stats" class="batch-stats"></div>
+                    </div>
+                    <div id="batch-result-content" class="result-content"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Analyzing activities... ✨</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Made with 💖 for cybersecurity professionals</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+
+

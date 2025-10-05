@@ -1,0 +1,13 @@
+{"timestamp": "2024-07-31T00:00:00", "source_ip": "177.52.183.80", "dest_ip": "192.168.1.50", "protocol": "HTTPS", "action": "blocked", "threat_label": "suspicious", "log_type": "ids", "bytes_transferred": "45164", "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36", "request_path": "/login?backup.sql"}
+{"timestamp": "2024-04-07T00:00:00", "source_ip": "192.168.1.248", "dest_ip": "192.168.1.15", "protocol": "HTTP", "action": "allowed", "threat_label": "benign", "log_type": "application", "bytes_transferred": "20652", "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36", "request_path": "/login"}
+{"timestamp": "2024-12-05T00:00:00", "source_ip": "141.26.13.167", "dest_ip": "192.168.1.141", "protocol": "TCP", "action": "allowed", "threat_label": "suspicious", "log_type": "ids", "bytes_transferred": "26588", "user_agent": "SQLMap/1.6-dev", "request_path": "/?..\\..\\etc\\passwd"}
+{"timestamp": "2024-06-01T00:00:00", "source_ip": "185.225.185.68", "dest_ip": "192.168.1.79", "protocol": "HTTP", "action": "allowed", "threat_label": "suspicious", "log_type": "application", "bytes_transferred": "13717", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/535.11", "request_path": "/dashboard?admin"}
+{"timestamp": "2024-03-06T00:00:00", "source_ip": "137.197.33.33", "dest_ip": "192.168.1.7", "protocol": "FTP", "action": "allowed", "threat_label": "suspicious", "log_type": "firewall", "bytes_transferred": "30357", "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/535.11", "request_path": "/upload?phpmyadmin"}
+
+
+
+
+
+
+
+

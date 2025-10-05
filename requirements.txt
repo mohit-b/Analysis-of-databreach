@@ -1,0 +1,10 @@
+# Core dependencies for data-breach activity classifier
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# Optional: For future DOCX policy parsing if needed
+# python-docx==0.8.11
+
+# Development and testing dependencies (optional)
+# pytest==7.4.3
+# pytest-cov==4.1.0

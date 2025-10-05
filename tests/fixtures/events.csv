@@ -1,0 +1,14 @@
+timestamp,source_ip,dest_ip,protocol,action,threat_label,log_type,bytes_transferred,user_agent,request_path
+2024-07-31T00:00:00,177.52.183.80,192.168.1.50,HTTPS,blocked,suspicious,ids,45164,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",/login?backup.sql
+2024-04-07T00:00:00,192.168.1.248,192.168.1.15,HTTP,allowed,benign,application,20652,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",/login
+2024-12-05T00:00:00,141.26.13.167,192.168.1.141,TCP,allowed,suspicious,ids,26588,SQLMap/1.6-dev,/?..\..\etc\passwd
+2024-06-01T00:00:00,185.225.185.68,192.168.1.79,HTTP,allowed,suspicious,application,13717,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/535.11",/dashboard?admin
+2024-03-06T00:00:00,137.197.33.33,192.168.1.7,FTP,allowed,suspicious,firewall,30357,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/535.11",/upload?phpmyadmin
+
+
+
+
+
+
+
+
