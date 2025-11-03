@@ -14,7 +14,6 @@ import threading
 import time
 from datetime import datetime
 from classifier.core import ActivityClassifier
-import sqlite3
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend-backend communication
@@ -29,8 +28,7 @@ batch_results = {}
 @app.route('/')
 def index():
     """Serve the main frontend page."""
-    # Provide a cache-busting timestamp for development so browsers load the latest JS
-    return render_template('index.html', now=int(time.time()))
+    return render_template('index.html')
 
 @app.route('/api/classify', methods=['POST'])
 def classify_single():
@@ -154,46 +152,30 @@ def process_single_file(file_content, filename, has_header=False):
                         })
                         error_count += 1
         else:
-            # Process CSV more robustly using csv.reader to handle quoting and embedded commas
-            # Normalize newlines and strip BOM if present
-            content = file_content.replace('\r\n', '\n').replace('\r', '\n')
-            if content.startswith('\ufeff'):
-                content = content.lstrip('\ufeff')
-
-            reader = csv.reader(io.StringIO(content))
-            rows = list(reader)
-            # If first row is header, skip it
-            start_idx = 1 if has_header and len(rows) > 0 else 0
-
-            for idx, row in enumerate(rows[start_idx:], start=start_idx):
-                try:
-                    # Reconstruct a normalized CSV line for the classifier using csv.writer
-                    out = io.StringIO()
-                    writer = csv.writer(out)
-                    writer.writerow(row)
-                    line_str = out.getvalue().strip('\n')
-
-                    if not line_str.strip():
-                        # skip empty lines
-                        continue
-
-                    success, result = classifier.process_activity(line_str)
+            # Process CSV
+            lines = file_content.strip().split('\n')
+            if has_header and lines:
+                lines = lines[1:]  # Skip header
+            
+            for i, line in enumerate(lines):
+                if line.strip():
+                    success, result = classifier.process_activity(line.strip())
                     if success:
                         result_lines = result.strip().split('\n')
                         if len(result_lines) >= 3:
                             status = result_lines[0].replace("Activity status: ", "")
                             attack_type = result_lines[1].replace("Type of attack: ", "")
                             reason = result_lines[2].replace("Reason: ", "")
-
+                            
                             results.append({
                                 "success": True,
                                 "status": status,
                                 "attack_type": attack_type if attack_type != "None" else None,
                                 "reason": reason,
                                 "raw_result": result,
-                                "line_number": idx + 1
+                                "line_number": i + 1
                             })
-
+                            
                             if status == "Malicious":
                                 malicious_count += 1
                         else:
@@ -201,28 +183,17 @@ def process_single_file(file_content, filename, has_header=False):
                                 "success": False,
                                 "error": "Unexpected result format",
                                 "raw_result": result,
-                                "line_number": idx + 1
+                                "line_number": i + 1
                             })
                             error_count += 1
                     else:
-                        # Log the problematic line to help debugging
-                        app.logger.debug(f"Classifier error for file {filename} line {idx+1}: {line_str}")
                         results.append({
                             "success": False,
                             "error": result.replace("Error: ", ""),
                             "raw_result": result,
-                            "line_number": idx + 1
+                            "line_number": i + 1
                         })
                         error_count += 1
-                except Exception as e:
-                    app.logger.exception(f"Failed processing row {idx+1} in {filename}: {e}")
-                    results.append({
-                        "success": False,
-                        "error": f"Processing failed: {str(e)}",
-                        "raw_result": "",
-                        "line_number": idx + 1
-                    })
-                    error_count += 1
         
         return {
             "success": True,
@@ -282,124 +253,17 @@ def process_batch_files_async(task_id, files_data, has_header):
         batch_tasks[task_id]["status"] = "completed"
         batch_tasks[task_id]["progress"] = 100
         batch_tasks[task_id]["end_time"] = datetime.now().isoformat()
-
-        # Normalize results to enforce contract: ensure keys exist and aggregates match
-        def _normalize_item(r):
-            # Extract from raw_result if needed
-            def from_raw(key):
-                try:
-                    raw = r.get('raw_result') or ''
-                    parts = raw.split('\n')
-                    if key == 'status' and len(parts) > 0:
-                        return parts[0].replace('Activity status: ', '').strip()
-                    if key == 'attack_type' and len(parts) > 1:
-                        val = parts[1].replace('Type of attack: ', '').strip()
-                        return None if val == 'None' else val
-                    if key == 'reason' and len(parts) > 2:
-                        return parts[2].replace('Reason: ', '').strip()
-                except Exception:
-                    return ''
-                return ''
-
-            # Determine success explicitly (some entries use 'success': False and 'error')
-            success_flag = bool(r.get('success', True))
-
-            # If this result represents an error, normalize to a clear error shape
-            if not success_flag:
-                # Prefer explicit error field, else try to extract from raw_result
-                err_msg = r.get('error') or ''
-                if not err_msg:
-                    raw = (r.get('raw_result') or '').strip()
-                    # raw may be like 'Error: ...' or a single-line message
-                    if raw.lower().startswith('error:'):
-                        err_msg = raw.split(':', 1)[1].strip()
-                    else:
-                        err_msg = raw
-
-                return {
-                    'status': 'Error',
-                    'attack_type': None,
-                    'reason': err_msg or 'Processing error',
-                    'filename': r.get('filename') or 'unknown',
-                    'line_number': r.get('line_number') or r.get('line') or None,
-                    'success': False,
-                    'raw_result': r.get('raw_result', '')
-                }
-
-            # Normal (successful) result path
-            status = r.get('status') or r.get('Status') or from_raw('status') or 'Unknown'
-            attack_type = r.get('attack_type') if ('attack_type' in r) else (r.get('Type of attack') or from_raw('attack_type'))
-            if attack_type == 'None':
-                attack_type = None
-            reason = r.get('reason') or r.get('Reason') or from_raw('reason') or ''
-
-            return {
-                'status': status,
-                'attack_type': attack_type,
-                'reason': reason,
-                'filename': r.get('filename') or 'unknown',
-                'line_number': r.get('line_number') or r.get('line') or None,
-                'success': True,
-                'raw_result': r.get('raw_result', '')
-            }
-
-        normalized = [_normalize_item(it) for it in all_results]
-        # Recompute aggregates from normalized list (source of truth)
-        total_records = len(normalized)
-        total_malicious = sum(1 for it in normalized if it['success'] and (it['status'] or '').lower() == 'malicious')
-        total_errors = sum(1 for it in normalized if not it['success'])
-
+        
         # Store results
         batch_results[task_id] = {
             "success": True,
-            "results": normalized,
+            "results": all_results,
             "total_count": total_records,
             "malicious_count": total_malicious,
             "error_count": total_errors,
             "files_processed": len(files_data),
             "processing_time": batch_tasks[task_id]["end_time"]
         }
-        # Persist a summary to disk (append as JSON Lines)
-        try:
-            log_entry = {
-                'task_id': task_id,
-                'files_processed': len(files_data),
-                'total_count': total_records,
-                'malicious_count': total_malicious,
-                'error_count': total_errors,
-                'start_time': batch_tasks[task_id].get('start_time'),
-                'end_time': batch_tasks[task_id].get('end_time')
-            }
-            log_path = os.path.join(os.getcwd(), 'batch_logs.jsonl')
-            with open(log_path, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(log_entry) + '\n')
-        except Exception as e:
-            batch_tasks[task_id]['log_error'] = str(e)
-        # Also persist to a small SQLite DB for reliability
-        try:
-            db_path = os.path.join(os.getcwd(), 'batch_logs.db')
-            conn = sqlite3.connect(db_path)
-            cur = conn.cursor()
-            cur.execute('''
-                CREATE TABLE IF NOT EXISTS batch_summaries (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    task_id TEXT,
-                    files_processed INTEGER,
-                    total_count INTEGER,
-                    malicious_count INTEGER,
-                    error_count INTEGER,
-                    start_time TEXT,
-                    end_time TEXT
-                )
-            ''')
-            cur.execute(
-                'INSERT INTO batch_summaries (task_id, files_processed, total_count, malicious_count, error_count, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (log_entry['task_id'], log_entry['files_processed'], log_entry['total_count'], log_entry['malicious_count'], log_entry['error_count'], log_entry['start_time'], log_entry['end_time'])
-            )
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            batch_tasks[task_id]['db_log_error'] = str(e)
         
     except Exception as e:
         batch_tasks[task_id]["status"] = "error"
@@ -442,19 +306,8 @@ def classify_batch():
         files_data = []
         for file in files:
             if file.filename:
-                raw = file.read()
-                try:
-                    content = raw.decode('utf-8')
-                except Exception:
-                    # fallback with latin-1 to avoid decode errors
-                    content = raw.decode('latin-1')
+                content = file.read().decode('utf-8')
                 files_data.append((file.filename, content))
-                # Log file receipt for debugging
-                try:
-                    sample = content[:200].replace('\n', '\\n')
-                    app.logger.debug(f"Received upload: {file.filename} size={len(raw)} sample='{sample}'")
-                except Exception:
-                    app.logger.debug(f"Received upload: {file.filename} size={len(raw)} (sample unavailable)")
         
         if not files_data:
             return jsonify({
