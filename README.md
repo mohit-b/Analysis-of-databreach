@@ -111,7 +111,5 @@ Where:
 This classifier is designed to be integrated into a chatbot system where it can process individual activity records and provide immediate threat assessment in the standardized 3-line format.
 
 
-
-![alt text][CyberGuard-Data-Breach-Activity-Classifier-11-03-2025_02_25_AM.png]
-
+![Screenshot](./CyberGuard-Data-Breach-Activity-Classifier-11-03-2025_02_25_AM.png)
 
